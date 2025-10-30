@@ -1,6 +1,3 @@
-import tkinter as tk
-import time
-
 
 import streamlit as st
 import time
