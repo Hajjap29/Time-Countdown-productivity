@@ -115,3 +115,4 @@ with st.expander("ℹ️ How to use"):
     - 📚 Study sessions
     - 💪 Workout intervals
     - ☕ Break reminders
+    """)
