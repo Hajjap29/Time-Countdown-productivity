@@ -1,100 +1,117 @@
-
 import streamlit as st
 import time
 
-class CountdownTimerApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Countdown Timer")
-        
-        # Set the background color of the main window
-        self.root.configure(bg="#ffffff")  # Light gray background
+# Page configuration
+st.set_page_config(
+    page_title="Productivity Timer",
+    page_icon="⏰",
+    layout="centered"
+)
 
-        # Initialize variables
-        self.time_left = 0
-        self.running = False
-        
-        # Create the UI components
-        self.create_widgets()
+# Custom CSS for styling
+st.markdown("""
+    <style>
+    .big-timer {
+        font-size: 72px;
+        font-weight: bold;
+        color: #ff6347;
+        text-align: center;
+        padding: 30px;
+        background-color: #f7f7f7;
+        border-radius: 15px;
+        margin: 20px 0;
+    }
+    .stButton>button {
+        width: 100%;
+        height: 60px;
+        font-size: 18px;
+        font-weight: bold;
+        border-radius: 10px;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-    def create_widgets(self):
-        # Title label with custom font, color, and background
-        self.title_label = tk.Label(self.root, text="Productivity Timer", font=("Arial", 24, "bold"), fg="#333333", bg="#f7f7f7")
-        self.title_label.pack(pady=20)
-        
-        # Entry for time with custom font, background color, and padding
-        self.time_entry = tk.Entry(self.root, font=("Arial", 18), width=5, bd=5, relief="flat", justify="center", fg="#333333", bg="#f1ebeb")  # Updated color
-        self.time_entry.pack(pady=20)
-        self.time_entry.insert(0, "10")  # Default 10 minutes
-        
-        # Countdown display label with bigger font size and custom color
-        self.countdown_label = tk.Label(self.root, text="00:00", font=("Arial", 48, "bold"), fg="#ff6347", bg="#f7f7f7", width=10)
-        self.countdown_label.pack(pady=20)
-        
-        # Frame to hold buttons for better layout
-        button_frame = tk.Frame(self.root, bg="#FFFFFF")
-        button_frame.pack(pady=20)
+# Initialize session state
+if 'time_left' not in st.session_state:
+    st.session_state.time_left = 0
+if 'running' not in st.session_state:
+    st.session_state.running = False
+if 'total_time' not in st.session_state:
+    st.session_state.total_time = 600  # 10 minutes default
 
-        # Start button with custom color and font
-        self.start_button = tk.Button(button_frame, text="Start", font=("Arial", 14), command=self.start_timer, width=10, height=2, bg="#4caf50", fg="white", activebackground="#45a049", relief="flat")
-        self.start_button.pack(side="left", padx=10)
-        
-        # Stop button with custom color and font
-        self.stop_button = tk.Button(button_frame, text="Stop", font=("Arial", 14), command=self.stop_timer, width=10, height=2, bg="#f44336", fg="white", activebackground="#e53935", relief="flat")
-        self.stop_button.pack(side="left", padx=10)
-        
-        # Reset button with custom color and font
-        self.reset_button = tk.Button(button_frame, text="Reset", font=("Arial", 14), command=self.reset_timer, width=10, height=2, bg="#9e9e9e", fg="white", activebackground="#757575", relief="flat")
-        self.reset_button.pack(side="left", padx=10)
+# Title
+st.markdown("<h1 style='text-align: center; color: #333333;'>⏰ Productivity Timer</h1>", unsafe_allow_html=True)
 
-    def start_timer(self):
-        if self.running:
-            return  # If it's already running, do nothing
-        self.running = True
-        try:
-            minutes = int(self.time_entry.get())  # Using self.time_entry to get user input
-            self.time_left = minutes * 60  # Convert to seconds
-            self.run_countdown()
-        except ValueError:
-            self.show_error("Please enter a valid number")
+# Time input
+col1, col2, col3 = st.columns([1, 2, 1])
+with col2:
+    minutes = st.number_input(
+        "Enter minutes:",
+        min_value=1,
+        max_value=180,
+        value=10,
+        step=1,
+        disabled=st.session_state.running
+    )
+
+# Display countdown
+if st.session_state.time_left > 0:
+    minutes_left = st.session_state.time_left // 60
+    seconds_left = st.session_state.time_left % 60
+    timer_display = f"{minutes_left:02d}:{seconds_left:02d}"
+else:
+    timer_display = "00:00"
+
+st.markdown(f"<div class='big-timer'>{timer_display}</div>", unsafe_allow_html=True)
+
+# Progress bar
+if st.session_state.total_time > 0:
+    progress = max(0, st.session_state.time_left / st.session_state.total_time)
+    st.progress(progress)
+
+# Control buttons
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("▶️ Start", type="primary", disabled=st.session_state.running, use_container_width=True):
+        st.session_state.total_time = minutes * 60
+        st.session_state.time_left = minutes * 60
+        st.session_state.running = True
+        st.rerun()
+
+with col2:
+    if st.button("⏹️ Stop", use_container_width=True):
+        st.session_state.running = False
+        st.rerun()
+
+with col3:
+    if st.button("🔄 Reset", use_container_width=True):
+        st.session_state.running = False
+        st.session_state.time_left = 0
+        st.session_state.total_time = minutes * 60
+        st.rerun()
+
+# Timer logic
+if st.session_state.running and st.session_state.time_left > 0:
+    time.sleep(1)
+    st.session_state.time_left -= 1
+    st.rerun()
+elif st.session_state.running and st.session_state.time_left <= 0:
+    st.session_state.running = False
+    st.balloons()
+    st.success("⏰ Time's up! Great work!")
+    st.rerun()
+
+# Instructions
+with st.expander("ℹ️ How to use"):
+    st.markdown("""
+    1. **Enter the time** in minutes (1-180 minutes)
+    2. **Click Start** to begin the countdown
+    3. **Click Stop** to pause the timer
+    4. **Click Reset** to clear the timer
     
-    def run_countdown(self):
-        if self.time_left <= 0:
-            self.show_error("Time's up!")
-            return
-        
-        minutes_left = self.time_left // 60
-        seconds_left = self.time_left % 60
-        self.countdown_label.config(text=f"{minutes_left:02}:{seconds_left:02}")  # Update label
-        
-        if self.running:
-            self.time_left -= 1
-            self.root.after(1000, self.run_countdown)  # Call this function again after 1 second
-
-    def stop_timer(self):
-        self.running = False
-    
-    def reset_timer(self):
-        self.running = False
-        self.time_left = 0
-        self.countdown_label.config(text="00:00")
-    
-    def show_error(self, message):
-        error_popup = tk.Toplevel(self.root)
-        error_popup.title("Error")
-        error_label = tk.Label(error_popup, text=message, font=("Arial", 14), fg="white", bg="#f44336")
-        error_label.pack(pady=10)
-        close_button = tk.Button(error_popup, text="Close", command=error_popup.destroy, bg="#f44336", fg="white", relief="flat")
-        close_button.pack(pady=5)
-
-
-
-# Set up the main window
-root = tk.Tk()
-
-
-app = CountdownTimerApp(root)
-
-
-# Start the Tkinter event loop
-root.mainloop()
+    Perfect for:
+    - 🍅 Pomodoro technique (25 minutes)
+    - 📚 Study sessions
+    - 💪 Workout intervals
+    - ☕ Break reminders
