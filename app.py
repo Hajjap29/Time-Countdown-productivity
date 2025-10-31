@@ -100,6 +100,15 @@ elif st.session_state.running and st.session_state.time_left <= 0:
     st.session_state.running = False
     st.balloons()
     st.success("⏰ Time's up! Great work!")
+    
+    # Play alarm sound when time's up (using HTML audio)
+    st.markdown("""
+    <audio autoplay>
+        <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
+        Your browser does not support the audio element.
+    </audio>
+    """, unsafe_allow_html=True)
+    
     st.rerun()
 
 # Instructions
@@ -116,3 +125,8 @@ with st.expander("ℹ️ How to use"):
     - 💪 Workout intervals
     - ☕ Break reminders
     """)
+
+<audio autoplay>
+    <source src="https://www.soundjay.com/button/beep-07.wav" type="audio/wav">
+    Your browser does not support the audio element.
+</audio>
