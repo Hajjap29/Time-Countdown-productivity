@@ -142,6 +142,10 @@ with col3:
         st.session_state.total_time = total_seconds
         st.rerun()
 
+# Initialize alarm state
+if 'alarm_triggered' not in st.session_state:
+    st.session_state.alarm_triggered = False
+
 # Timer logic
 if st.session_state.running and st.session_state.time_left > 0:
     time.sleep(1)
@@ -149,14 +153,43 @@ if st.session_state.running and st.session_state.time_left > 0:
     st.rerun()
 elif st.session_state.running and st.session_state.time_left <= 0:
     st.session_state.running = False
+    st.session_state.alarm_triggered = True
+    st.rerun()
+
+# Show alarm when triggered
+if st.session_state.alarm_triggered:
     st.balloons()
     st.success("⏰ Time's up! Great work!")
     
-    # Play alarm sound using the uploaded file
+    # Read and encode audio file
+    import base64
     audio_file = open('mixkit-facility-alarm-sound-999.wav', 'rb')
     audio_bytes = audio_file.read()
-    st.audio(audio_bytes, format='audio/wav', autoplay=True)
-    st.rerun()
+    audio_base64 = base64.b64encode(audio_bytes).decode()
+    
+    # Try to autoplay with JavaScript
+    alarm_html = f"""
+    <audio id="alarmSound" autoplay>
+        <source src="data:audio/wav;base64,{audio_base64}" type="audio/wav">
+    </audio>
+    <script>
+        var audio = document.getElementById('alarmSound');
+        audio.volume = 1.0;
+        audio.play().catch(function(error) {{
+            console.log('Autoplay prevented:', error);
+        }});
+    </script>
+    """
+    st.markdown(alarm_html, unsafe_allow_html=True)
+    
+    # Also show audio player as fallback
+    st.markdown("### 🔔 Click play if you don't hear the alarm:")
+    st.audio(audio_bytes, format='audio/wav')
+    
+    # Button to dismiss alarm
+    if st.button("✅ Dismiss Alarm", use_container_width=True):
+        st.session_state.alarm_triggered = False
+        st.rerun()
 
 # Instructions
 with st.expander("ℹ️ How to use"):
