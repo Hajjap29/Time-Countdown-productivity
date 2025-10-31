@@ -102,12 +102,13 @@ elif st.session_state.running and st.session_state.time_left <= 0:
     st.success("⏰ Time's up! Great work!")
     
     # Play alarm sound when time's up using JS and HTML
-    st.markdown("""
+    alarm_js = """
     <script type="text/javascript">
         var audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
         audio.play();
     </script>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(alarm_js, unsafe_allow_html=True)
 
     st.rerun()
 
@@ -125,9 +126,4 @@ with st.expander("ℹ️ How to use"):
     - 💪 Workout intervals
     - ☕ Break reminders
     """)
-
-<script type="text/javascript">
-    var audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-    audio.play();
-</script>
 
