@@ -152,13 +152,10 @@ elif st.session_state.running and st.session_state.time_left <= 0:
     st.balloons()
     st.success("⏰ Time's up! Great work!")
     
-    # Play alarm sound using HTML5 audio with a public sound URL
-    alarm_html = """
-    <audio autoplay>
-        <source src="mixkit-facility-alaram-sound-999.wav" type="audio/mpeg">
-    </audio>
-    """
-    st.markdown(alarm_html, unsafe_allow_html=True)
+    # Play alarm sound using the uploaded file
+    audio_file = open('mixkit-facility-alarm-sound-999.wav', 'rb')
+    audio_bytes = audio_file.read()
+    st.audio(audio_bytes, format='audio/wav', autoplay=True)
     st.rerun()
 
 # Instructions
