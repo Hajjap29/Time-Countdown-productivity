@@ -37,22 +37,45 @@ if 'time_left' not in st.session_state:
 if 'running' not in st.session_state:
     st.session_state.running = False
 if 'total_time' not in st.session_state:
-    st.session_state.total_time = 600  # 10 minutes default
+    st.session_state.total_time = 600  # Default to 10 minutes
 
 # Title
 st.markdown("<h1 style='text-align: center; color: #333333;'>⏰ Productivity Timer</h1>", unsafe_allow_html=True)
 
-# Time input
-col1, col2, col3 = st.columns([1, 2, 1])
-with col2:
-    minutes = st.number_input(
-        "Enter minutes:",
-        min_value=1,
-        max_value=180,
-        value=10,
-        step=1,
-        disabled=st.session_state.running
-    )
+# Timer Duration Selection
+timer_option = st.radio(
+    "Choose timer duration:",
+    ["Custom time", "30 seconds", "1 minute", "5 minutes", "10 minutes", "15 minutes"]
+)
+
+# Custom timer input for "Custom time"
+if timer_option == "Custom time":
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        minutes = st.number_input(
+            "Enter minutes:",
+            min_value=1,
+            max_value=180,
+            value=10,
+            step=1,
+            disabled=st.session_state.running
+        )
+else:
+    # Set pre-set timer options
+    if timer_option == "30 seconds":
+        minutes = 0
+        seconds = 30
+    elif timer_option == "1 minute":
+        minutes = 1
+    elif timer_option == "5 minutes":
+        minutes = 5
+    elif timer_option == "10 minutes":
+        minutes = 10
+    elif timer_option == "15 minutes":
+        minutes = 15
+
+# Convert all time to seconds for consistency
+total_seconds = (minutes * 60) + seconds if 'seconds' in locals() else minutes * 60
 
 # Display countdown
 if st.session_state.time_left > 0:
@@ -74,8 +97,8 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     if st.button("▶️ Start", type="primary", disabled=st.session_state.running, use_container_width=True):
-        st.session_state.total_time = minutes * 60
-        st.session_state.time_left = minutes * 60
+        st.session_state.total_time = total_seconds
+        st.session_state.time_left = total_seconds
         st.session_state.running = True
         st.rerun()
 
@@ -88,7 +111,7 @@ with col3:
     if st.button("🔄 Reset", use_container_width=True):
         st.session_state.running = False
         st.session_state.time_left = 0
-        st.session_state.total_time = minutes * 60
+        st.session_state.total_time = total_seconds
         st.rerun()
 
 # Timer logic
@@ -102,9 +125,9 @@ elif st.session_state.running and st.session_state.time_left <= 0:
     st.success("⏰ Time's up! Great work!")
     
     # Play alarm sound when time's up using JS and HTML
-    alarm_js = """
+    alarm_js = f"""
     <script type="text/javascript">
-        var audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+        var audio = new Audio('/mnt/data/mixkit-facility-alarm-sound-999.wav');
         audio.play();
     </script>
     """
@@ -115,7 +138,7 @@ elif st.session_state.running and st.session_state.time_left <= 0:
 # Instructions
 with st.expander("ℹ️ How to use"):
     st.markdown("""
-    1. **Enter the time** in minutes (1-180 minutes)
+    1. **Choose a timer duration** (either a pre-set timer or custom time)
     2. **Click Start** to begin the countdown
     3. **Click Stop** to pause the timer
     4. **Click Reset** to clear the timer
@@ -126,4 +149,3 @@ with st.expander("ℹ️ How to use"):
     - 💪 Workout intervals
     - ☕ Break reminders
     """)
-
