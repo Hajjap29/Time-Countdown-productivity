@@ -155,7 +155,7 @@ elif st.session_state.running and st.session_state.time_left <= 0:
     # Play alarm sound using HTML5 audio with a public sound URL
     alarm_html = """
     <audio autoplay>
-        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+        <source src="mixkit-facility-alaram-sound-999.wav" type="audio/mpeg">
     </audio>
     """
     st.markdown(alarm_html, unsafe_allow_html=True)
