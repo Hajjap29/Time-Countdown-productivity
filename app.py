@@ -45,21 +45,38 @@ st.markdown("<h1 style='text-align: center; color: #333333;'>⏰ Productivity Ti
 # Timer Duration Selection
 timer_option = st.radio(
     "Choose timer duration:",
-    ["Custom time", "30 seconds", "1 minute", "5 minutes", "10 minutes", "15 minutes"]
+    ["Custom time", "30 seconds", "1 minute", "5 minutes", "10 minutes", "15 minutes", "25 minutes (Pomodoro)"],
+    horizontal=True
 )
+
+# Initialize variables
+minutes = 0
+seconds = 0
 
 # Custom timer input for "Custom time"
 if timer_option == "Custom time":
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col1:
+        st.write("")  # Spacer
     with col2:
         minutes = st.number_input(
-            "Enter minutes:",
-            min_value=1,
+            "Minutes:",
+            min_value=0,
             max_value=180,
             value=10,
             step=1,
             disabled=st.session_state.running
         )
+        seconds = st.number_input(
+            "Seconds:",
+            min_value=0,
+            max_value=59,
+            value=0,
+            step=1,
+            disabled=st.session_state.running
+        )
+    with col3:
+        st.write("")  # Spacer
 else:
     # Set pre-set timer options
     if timer_option == "30 seconds":
@@ -67,15 +84,26 @@ else:
         seconds = 30
     elif timer_option == "1 minute":
         minutes = 1
+        seconds = 0
     elif timer_option == "5 minutes":
         minutes = 5
+        seconds = 0
     elif timer_option == "10 minutes":
         minutes = 10
+        seconds = 0
     elif timer_option == "15 minutes":
         minutes = 15
+        seconds = 0
+    elif timer_option == "25 minutes (Pomodoro)":
+        minutes = 25
+        seconds = 0
 
 # Convert all time to seconds for consistency
-total_seconds = (minutes * 60) + seconds if 'seconds' in locals() else minutes * 60
+total_seconds = (minutes * 60) + seconds
+
+# Validation
+if total_seconds == 0 and not st.session_state.running:
+    st.warning("⚠️ Please set a time greater than 0 seconds")
 
 # Display countdown
 if st.session_state.time_left > 0:
@@ -96,7 +124,7 @@ if st.session_state.total_time > 0:
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    if st.button("▶️ Start", type="primary", disabled=st.session_state.running, use_container_width=True):
+    if st.button("▶️ Start", type="primary", disabled=st.session_state.running or total_seconds == 0, use_container_width=True):
         st.session_state.total_time = total_seconds
         st.session_state.time_left = total_seconds
         st.session_state.running = True
@@ -124,28 +152,29 @@ elif st.session_state.running and st.session_state.time_left <= 0:
     st.balloons()
     st.success("⏰ Time's up! Great work!")
     
-    # Play alarm sound when time's up using JS and HTML
-    alarm_js = f"""
-    <script type="text/javascript">
-        var audio = new Audio('/mnt/data/mixkit-facility-alarm-sound-999.wav');
-        audio.play();
-    </script>
+    # Play alarm sound using HTML5 audio with a public sound URL
+    alarm_html = """
+    <audio autoplay>
+        <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+    </audio>
     """
-    st.markdown(alarm_js, unsafe_allow_html=True)
-
+    st.markdown(alarm_html, unsafe_allow_html=True)
     st.rerun()
 
 # Instructions
 with st.expander("ℹ️ How to use"):
     st.markdown("""
-    1. **Choose a timer duration** (either a pre-set timer or custom time)
-    2. **Click Start** to begin the countdown
-    3. **Click Stop** to pause the timer
-    4. **Click Reset** to clear the timer
+    1. **Choose a timer duration** (pre-set or custom)
+    2. For custom time, set both **minutes and seconds**
+    3. **Click Start** to begin the countdown
+    4. **Click Stop** to pause the timer
+    5. **Click Reset** to clear the timer
+    6. An alarm will sound when time is up! 🔔
     
     Perfect for:
     - 🍅 Pomodoro technique (25 minutes)
     - 📚 Study sessions
     - 💪 Workout intervals
     - ☕ Break reminders
+    - ⏱️ Cooking timers
     """)
