@@ -128,6 +128,7 @@ with col1:
         st.session_state.total_time = total_seconds
         st.session_state.time_left = total_seconds
         st.session_state.running = True
+        st.session_state.alarm_triggered = False  # Reset alarm when starting
         st.rerun()
 
 with col2:
@@ -140,6 +141,7 @@ with col3:
         st.session_state.running = False
         st.session_state.time_left = 0
         st.session_state.total_time = total_seconds
+        st.session_state.alarm_triggered = False  # Reset alarm when resetting
         st.rerun()
 
 # Initialize alarm state
